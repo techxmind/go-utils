@@ -27,3 +27,47 @@ func TestGetValue(t *testing.T) {
 	ast.Nil(v)
 	ast.False(ok)
 }
+
+func TestGetObject(t *testing.T) {
+	ast := assert.New(t)
+	obj := map[string]interface{}{
+		"a": []interface{}{
+			map[string]interface{}{
+				"b": 0,
+			},
+		},
+	}
+	type checkItem struct {
+		keyPath string
+		create  bool
+		val     interface{}
+		exists  bool
+	}
+	type testCase struct {
+		obj       interface{}
+		checkList []checkItem
+	}
+	tests := []testCase{
+		{
+			obj,
+			[]checkItem{
+				{"a", false, obj["a"], true},
+				{"a.0", false, obj["a"].([]interface{})[0], true},
+				{"a.0.b", false, obj["a"].([]interface{})[0].(map[string]interface{})["b"], true},
+				{"a.0.z", false, nil, false},
+				{"a.0.c.d", true, map[string]interface{}{}, false},
+				{"a.0.c.d", false, map[string]interface{}{}, true},
+				{"a.10.b", false, nil, false},
+				{"a.10.b", true, nil, false},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		for _, check := range test.checkList {
+			val, exists := GetObject(test.obj, check.keyPath, check.create)
+			ast.Equal(val, check.val)
+			ast.Equal(exists, check.exists)
+		}
+	}
+}

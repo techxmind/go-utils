@@ -16,27 +16,49 @@ import (
 //   GetValue(obj, "path.to.node")
 //
 func GetValue(obj interface{}, keyPath string) (val interface{}, exists bool) {
+	return GetObject(obj, keyPath, false)
+}
+
+// GetObject get child object from object.
+//
+// obj's real type can be either map[string]interface{} or []interface{},
+// otherwise return not exists.
+// If createIfNotExists is true and keyPath don't contains array access,
+// will create not exists nodes in specified keyPath with type map[string]interface{}, and return exists false.
+//
+// Usually, obj is from json universal unmarshal.
+// example:
+//   var obj interface{}
+//   json.Unmarshal(jsonStr, &obj)
+//   GetObject(obj, "path.to.node", false)
+//
+func GetObject(obj interface{}, keyPath string, createIfNotExists bool) (val interface{}, exists bool) {
 	for _, key := range strings.Split(keyPath, ".") {
-		if obj == nil {
-			return nil, false
-		}
 		switch v := obj.(type) {
 		case map[string]interface{}:
-			if obj, exists = v[key]; !exists {
-				return nil, false
+			obj, exists = v[key]
+			if !exists {
+				if !createIfNotExists {
+					return nil, false
+				}
+				obj = make(map[string]interface{})
+				v[key] = obj
 			}
 		case []interface{}:
 			if i, err := strconv.Atoi(key); err != nil {
 				return nil, false
-			} else if i < 0 || i >= len(v) {
-				return nil, false
 			} else {
-				obj = v[i]
+				if i < 0 || i >= len(v) {
+					return nil, false
+				} else {
+					obj = v[i]
+				}
 			}
 		default:
 			return nil, false
 		}
 	}
 
-	return obj, true
+	val = obj
+	return
 }
