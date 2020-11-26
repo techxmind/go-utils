@@ -14,11 +14,14 @@ const (
 	STRING Type = iota
 	NUMBER
 	BOOL
-	HASH
+	MAP
 	ARRAY
 	NULL
 	UNKNOWN
 )
+
+// compatible with old version
+const HASH = MAP
 
 func (t Type) String() string {
 	switch t {
@@ -28,8 +31,8 @@ func (t Type) String() string {
 		return "NUMBER"
 	case BOOL:
 		return "BOOL"
-	case HASH:
-		return "HASH"
+	case MAP:
+		return "MAP"
 	case ARRAY:
 		return "ARRAY"
 	case NULL:
@@ -63,12 +66,12 @@ func GetType(obj interface{}) Type {
 	}
 
 	typeName := reflect.TypeOf(obj).String()
-	if strings.HasPrefix(typeName, "[]") {
+	if strings.HasPrefix(typeName, "[") {
 		return ARRAY
 	}
 
 	if strings.HasPrefix(typeName, "map") {
-		return HASH
+		return MAP
 	}
 
 	if _, ok := _numberTypes[typeName]; ok {

@@ -3,6 +3,8 @@ package itype
 import (
 	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFloat(t *testing.T) {
@@ -253,6 +255,27 @@ func TestBool(t *testing.T) {
 		if f != test.value {
 			t.Errorf("%+v != %v. %v", test.obj, test.value, f)
 		}
+	}
+}
+
+func TestType(t *testing.T) {
+	tests := []struct {
+		in    interface{}
+		check Type
+	}{
+		{1, NUMBER},
+		{1.2, NUMBER},
+		{false, BOOL},
+		{"1", STRING},
+		{[]int{1}, ARRAY},
+		{[1]int{1}, ARRAY},
+		{map[int]int{1: 1}, MAP},
+		{nil, NULL},
+		{func() {}, UNKNOWN},
+	}
+
+	for i, test := range tests {
+		assert.Equal(t, test.check, GetType(test.in), "case %d: %v", i, test.in)
 	}
 }
 
