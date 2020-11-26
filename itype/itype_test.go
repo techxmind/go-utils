@@ -1,9 +1,8 @@
 package itype
 
 import (
+	"math"
 	"testing"
-
-	"github.com/techxmind/go-utils/compare"
 )
 
 func TestFloat(t *testing.T) {
@@ -51,8 +50,8 @@ func TestFloat(t *testing.T) {
 
 	for _, test := range tests {
 		f := Float(test.obj)
-		if !compare.FloatEquals(f, float64(test.value)) {
-			t.Errorf("%v !=> %f", test.obj, test.value)
+		if math.Abs(f-float64(test.value)) > 1e-9 {
+			t.Errorf("%v != %f", test.obj, test.value)
 		}
 	}
 }
