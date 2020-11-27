@@ -26,6 +26,10 @@ func GetValue(obj interface{}, keyPath string) (val interface{}, exists bool) {
 // If createIfNotExists is true and keyPath don't contains array access,
 // will create not exists nodes in specified keyPath with type map[string]interface{}, and return exists false.
 //
+// Notice: keyPath = "" means obj it self
+//         but keyPath = ".xxx" contains an empty path, it means obj[""]["xxx"]
+//         anyway, avoid using empty path.
+//
 // Usually, obj is from json universal unmarshal.
 // example:
 //   var obj interface{}
@@ -33,6 +37,10 @@ func GetValue(obj interface{}, keyPath string) (val interface{}, exists bool) {
 //   GetObject(obj, "path.to.node", false)
 //
 func GetObject(obj interface{}, keyPath string, createIfNotExists bool) (val interface{}, exists bool) {
+	if keyPath == "" {
+		return obj, true
+	}
+	exists = true
 	for _, key := range strings.Split(keyPath, ".") {
 		switch v := obj.(type) {
 		case map[string]interface{}:
@@ -59,6 +67,5 @@ func GetObject(obj interface{}, keyPath string, createIfNotExists bool) (val int
 		}
 	}
 
-	val = obj
-	return
+	return obj, exists
 }

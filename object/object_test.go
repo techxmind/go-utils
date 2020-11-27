@@ -59,15 +59,16 @@ func TestGetObject(t *testing.T) {
 				{"a.0.c.d", false, map[string]interface{}{}, true},
 				{"a.10.b", false, nil, false},
 				{"a.10.b", true, nil, false},
+				{"", false, obj, true},
 			},
 		},
 	}
 
-	for _, test := range tests {
-		for _, check := range test.checkList {
+	for i, test := range tests {
+		for j, check := range test.checkList {
 			val, exists := GetObject(test.obj, check.keyPath, check.create)
-			ast.Equal(val, check.val)
-			ast.Equal(exists, check.exists)
+			ast.Equal(check.val, val, "case %d.%d: %s", i, j, check.keyPath)
+			ast.Equal(check.exists, exists, "case %d.%d: %s", i, j, check.keyPath)
 		}
 	}
 }
