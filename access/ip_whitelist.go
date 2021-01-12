@@ -4,25 +4,26 @@ import (
 	"strings"
 )
 
-type IPWhitelist struct {
-	list [][]string
-}
+//  NewIPWhitelist("192.168.1.1", "192.168.1.0/24,192.168.1.3", []string{"10.0.0.1"}, []interface{}{"127.0.0.1"})
+//
+func NewIPWhitelist(vals ...interface{}) *IPList {
 
-// Value格式: 111.10.11.3, 111.10.11.% 111.10.11.*
-//
-//   NewIPWhitelist("192.168.1.1", "192.168.1.2,192.168.1.3", []string{"10.0.0.1"}, []interface{}{"127.0.0.1"})
-//
-func NewIPWhitelist(whitelist ...interface{}) *IPWhitelist {
-	list := make([][]string, 0, len(whitelist))
+	list := make([]string, 0, len(vals)+2)
+
+	// add localhost
+	list = append(list, "127.0.0.1/8", "::1/128")
+
 	coll := func(str string) {
 		for _, subItem := range strings.Split(strings.TrimSpace(str), ",") {
+			subItem = strings.TrimSpace(subItem)
 			if subItem == "" {
 				continue
 			}
-			list = append(list, strings.Split(strings.TrimSpace(subItem), "."))
+			list = append(list, subItem)
 		}
 	}
-	for _, item := range whitelist {
+
+	for _, item := range vals {
 		switch v := item.(type) {
 		case string:
 			coll(v)
@@ -38,27 +39,6 @@ func NewIPWhitelist(whitelist ...interface{}) *IPWhitelist {
 			}
 		}
 	}
-	return &IPWhitelist{
-		list: list,
-	}
-}
 
-func (l *IPWhitelist) Contains(ip string) bool {
-	segments := strings.Split(ip, ".")
-
-Outer:
-	for _, item := range l.list {
-		if len(item) > len(segments) {
-			continue
-		}
-		for i, segment := range item {
-			if segment == "*" || segment == "%" || segment == segments[i] {
-				continue
-			}
-			continue Outer
-		}
-		return true
-	}
-
-	return false
+	return NewIPList(list...)
 }
